@@ -167,6 +167,7 @@ export interface Recipe {
   protein: number;
   carbs: number;
   fat: number;
+  imageUrl?: string;
   imageAlt?: string;
 }
 

@@ -145,6 +145,35 @@ export const getStorageAdvice = async (itemName: string): Promise<StorageAdvice>
   }
 };
 
+export const generateRecipeImage = async (recipeTitle: string): Promise<string | undefined> => {
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: {
+        parts: [
+          {
+            text: `A high-quality, professional food photography shot of a ${recipeTitle}. Beautifully plated, natural lighting, appetizing, gourmet style.`,
+          },
+        ],
+      },
+      config: {
+        imageConfig: {
+          aspectRatio: "16:9",
+        },
+      },
+    });
+
+    for (const part of response.candidates[0].content.parts) {
+      if (part.inlineData) {
+        return `data:image/png;base64,${part.inlineData.data}`;
+      }
+    }
+  } catch (e) {
+    console.error("Image generation failed for:", recipeTitle, e);
+  }
+  return undefined;
+};
+
 export const getRecipesForIngredients = async (ingredients: string[]): Promise<Recipe[]> => {
   const prompt = `Suggest 3 unique recipes that primarily use these ingredients: ${ingredients.join(', ')}. 
   Prioritize reducing food waste and efficiency. 

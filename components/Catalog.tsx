@@ -1,11 +1,12 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Product, ProductCategory, InventoryItem, NutritionGoals, Recommendation } from '../types';
+import { Product, ProductCategory, InventoryItem, NutritionGoals, Recommendation, CartItem } from '../types';
 import { MOCK_PRODUCTS } from '../constants';
 import { getShoppingRecommendations } from '../services/geminiService';
 
 interface CatalogProps {
   onAddToCart: (product: Product) => void;
+  cart: CartItem[];
   selectedStores: string[];
   inventory: InventoryItem[];
   goals: NutritionGoals;
@@ -23,7 +24,7 @@ const CATEGORIES: { id: ProductCategory; label: string; icon: string }[] = [
   { id: 'snacks', label: 'Snacks', icon: 'fa-cookie' },
 ];
 
-const Catalog: React.FC<CatalogProps> = ({ onAddToCart, selectedStores, inventory, goals }) => {
+const Catalog: React.FC<CatalogProps> = ({ onAddToCart, cart, selectedStores, inventory, goals }) => {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<ProductCategory | 'all'>('all');
   const [filterSale, setFilterSale] = useState(false);
@@ -197,51 +198,58 @@ const Catalog: React.FC<CatalogProps> = ({ onAddToCart, selectedStores, inventor
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map(product => (
-            <div key={product.id} className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col group">
-              <div className="relative aspect-square bg-slate-50 rounded-2xl mb-4 overflow-hidden flex items-center justify-center text-slate-300">
-                {product.imageUrl ? (
-                  <img 
-                    src={product.imageUrl} 
-                    alt={product.name} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                ) : (
-                  <i className="fas fa-box-open text-6xl group-hover:scale-110 transition-transform"></i>
-                )}
-                {product.isOrganic && (
-                  <span className="absolute top-3 left-3 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider shadow-sm">Organic</span>
-                )}
-                {product.isOnSale && (
-                  <span className="absolute top-3 right-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider shadow-sm">Sale</span>
-                )}
-              </div>
-              <div className="flex-1 space-y-1">
-                <h4 className="font-bold text-slate-800 line-clamp-1 group-hover:text-emerald-600 transition-colors">{product.name}</h4>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-extrabold text-slate-900">${(product.isOnSale ? product.salePrice : product.price)?.toFixed(2)}</span>
+          {filteredProducts.map(product => {
+            const isInCart = cart.some(item => item.productId === product.id);
+            return (
+              <div key={product.id} className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col group">
+                <div className="relative aspect-square bg-slate-50 rounded-2xl mb-4 overflow-hidden flex items-center justify-center text-slate-300">
+                  {product.imageUrl ? (
+                    <img 
+                      src={product.imageUrl} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <i className="fas fa-box-open text-6xl group-hover:scale-110 transition-transform"></i>
+                  )}
+                  {product.isOrganic && (
+                    <span className="absolute top-3 left-3 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider shadow-sm">Organic</span>
+                  )}
                   {product.isOnSale && (
-                    <span className="text-sm text-slate-400 line-through">${product.price.toFixed(2)}</span>
+                    <span className="absolute top-3 right-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider shadow-sm">Sale</span>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 flex items-center gap-1">
-                  <i className="fas fa-store text-[10px]"></i>
-                  {product.storeId === 's1' ? 'Whole Foods' : product.storeId === 's2' ? 'Trader Joe\'s' : 'Kroger'}
-                </p>
-                <div className="pt-2 flex flex-wrap gap-2">
-                   <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">{product.calories} kcal</span>
-                   <span className="text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-md">{product.protein}g protein</span>
+                <div className="flex-1 space-y-1">
+                  <h4 className="font-bold text-slate-800 line-clamp-1 group-hover:text-emerald-600 transition-colors">{product.name}</h4>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-extrabold text-slate-900">${(product.isOnSale ? product.salePrice : product.price)?.toFixed(2)}</span>
+                    {product.isOnSale && (
+                      <span className="text-sm text-slate-400 line-through">${product.price.toFixed(2)}</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500 flex items-center gap-1">
+                    <i className="fas fa-store text-[10px]"></i>
+                    {product.storeId === 's1' ? 'Whole Foods' : product.storeId === 's2' ? 'Trader Joe\'s' : 'Kroger'}
+                  </p>
+                  <div className="pt-2 flex flex-wrap gap-2">
+                     <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">{product.calories} kcal</span>
+                     <span className="text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-md">{product.protein}g protein</span>
+                  </div>
                 </div>
+                <button 
+                  onClick={() => onAddToCart(product)}
+                  className={`mt-4 w-full py-2.5 font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                    isInCart 
+                      ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 shadow-sm' 
+                      : 'bg-slate-900 text-white hover:bg-emerald-600 shadow-lg shadow-slate-100'
+                  }`}
+                >
+                  <i className={`fas ${isInCart ? 'fa-check' : 'fa-plus'}`}></i>
+                  {isInCart ? 'Added to Cart' : 'Add to Cart'}
+                </button>
               </div>
-              <button 
-                onClick={() => onAddToCart(product)}
-                className="mt-4 w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-emerald-600 transition-all flex items-center justify-center gap-2"
-              >
-                <i className="fas fa-plus"></i>
-                Add to Cart
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

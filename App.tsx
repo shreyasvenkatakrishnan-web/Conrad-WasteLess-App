@@ -362,12 +362,13 @@ const App: React.FC = () => {
       case 'shop':
         return <Catalog 
           onAddToCart={addToCart} 
+          cart={cart}
           selectedStores={stores.filter(s => s.isSelected).map(s => s.id)}
           inventory={inventory}
           goals={goals}
         />;
       case 'deals':
-        return <Deals onAddToCart={addToCart} products={MOCK_PRODUCTS} deals={MOCK_DEALS} />;
+        return <Deals onAddToCart={addToCart} cart={cart} products={MOCK_PRODUCTS} deals={MOCK_DEALS} />;
       case 'cart':
         return <Cart 
           items={cart} 

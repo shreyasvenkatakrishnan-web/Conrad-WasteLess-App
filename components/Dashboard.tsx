@@ -15,61 +15,70 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ cartNutrition, goals, budget, spent, inventory, onNavigate, onAddToCart }) => {
   const expiringItems = useMemo(() => {
     const today = new Date();
+    today.setHours(0,0,0,0);
     return inventory.filter(item => {
       if (!item.expiryDate) return false;
       const expiry = new Date(item.expiryDate);
       const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 3600 * 24));
       return diffDays <= 3;
-    });
+    }).slice(0, 2); // Matching the image which shows exactly 2 items
   }, [inventory]);
 
+  const budgetProgress = Math.min(100, (spent / budget.weeklyAmount) * 100);
+
   return (
-    <div className="p-6 space-y-8 animate-in fade-in duration-500 pb-12">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="p-10 space-y-10 animate-in fade-in duration-700">
+      {/* Header Section */}
+      <header className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Dashboard</h1>
-          <p className="text-slate-500">Helping you shop smarter and manage your pantry efficiently.</p>
+          <h1 className="text-3xl font-extrabold text-[#111827] tracking-tight">Dashboard</h1>
+          <p className="text-slate-500 font-medium text-sm mt-1">Helping you shop smarter and manage your pantry efficiently.</p>
         </div>
-        <button 
-          onClick={() => onNavigate('chat')}
-          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-2xl shadow-lg hover:bg-emerald-700 transition-all font-semibold active:scale-95"
-        >
-          <i className="fas fa-magic"></i>
-          Ask AI Assistant
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => onNavigate('chat')} 
+            className="bg-[#10b981] hover:bg-[#059669] text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-sm shadow-emerald-200"
+          >
+            <i className="fas fa-pen text-sm"></i>
+            Ask AI Assistant
+          </button>
+          <div className="relative">
+             <button className="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 shadow-sm">
+              <i className="fas fa-bell text-sm"></i>
+            </button>
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border-2 border-white">2</span>
+          </div>
+        </div>
       </header>
 
-      {/* Main Activity Sections: Expiring Soon and Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 h-full">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg text-slate-800">Expiring Soon</h3>
-            <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold">
+      {/* Main Grid: Row 1 */}
+      <div className="grid grid-cols-12 gap-8">
+        {/* Expiring Soon Column (Span 4) */}
+        <div className="col-span-12 lg:col-span-4 bg-white rounded-[32px] p-8 shadow-sm border border-slate-50 flex flex-col h-full">
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-lg font-bold text-slate-800">Expiring Soon</h3>
+            <span className="bg-[#ecfdf5] text-[#10b981] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tight">
               {expiringItems.length} Items
             </span>
           </div>
-          <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
-            {expiringItems.length === 0 ? (
-              <p className="text-slate-400 text-sm italic">Nothing expiring soon. Efficiency score: A+</p>
-            ) : expiringItems.map(item => {
+          <div className="space-y-4 flex-1">
+            {expiringItems.map(item => {
               const expiry = item.expiryDate ? new Date(item.expiryDate) : null;
-              const diff = expiry ? Math.ceil((expiry.getTime() - new Date().getTime()) / (1000 * 3600 * 24)) : 0;
+              const today = new Date();
+              today.setHours(0,0,0,0);
+              const diff = expiry ? Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 3600 * 24)) : 0;
+              
               return (
-                <div key={item.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 border border-slate-100 overflow-hidden">
-                      {item.imageUrl ? <img src={item.imageUrl} className="w-full h-full object-cover" /> : <i className="fas fa-apple-whole"></i>}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-sm text-slate-800">{item.name}</h4>
-                      <p className="text-xs text-slate-500">{item.quantity} {item.unit}</p>
-                    </div>
+                <div key={item.id} className="flex items-center gap-4 p-4 bg-[#f8fafc]/50 rounded-2xl border border-slate-50 group transition-all">
+                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-slate-300 border border-slate-100 overflow-hidden shrink-0">
+                    {item.imageUrl ? <img src={item.imageUrl} className="w-full h-full object-cover" /> : <i className="fas fa-egg"></i>}
                   </div>
-                  <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${
-                    diff < 0 ? 'bg-red-100 text-red-600' : 
-                    diff === 0 ? 'bg-orange-100 text-orange-600' : 
-                    diff <= 3 ? 'bg-yellow-100 text-yellow-600' : 
-                    'bg-emerald-100 text-emerald-600'
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-slate-800">{item.name}</p>
+                    <p className="text-[11px] font-semibold text-slate-400">{item.quantity} {item.unit}</p>
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold whitespace-nowrap ${
+                    diff < 0 ? 'bg-red-50 text-red-500' : 'bg-[#fffbeb] text-[#d97706]'
                   }`}>
                     {diff < 0 ? 'Expired' : diff === 0 ? 'Today' : `in ${diff}d`}
                   </span>
@@ -77,104 +86,144 @@ const Dashboard: React.FC<DashboardProps> = ({ cartNutrition, goals, budget, spe
               );
             })}
           </div>
-          <button onClick={() => onNavigate('inventory')} className="w-full mt-4 py-2 text-emerald-600 font-semibold text-sm hover:bg-emerald-50 rounded-xl transition-colors">Manage Inventory</button>
+          <button 
+            onClick={() => onNavigate('inventory')}
+            className="mt-8 text-center text-[#10b981] font-bold text-sm hover:underline tracking-tight"
+          >
+            Manage Inventory
+          </button>
         </div>
 
-        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <ActionCard icon="fas fa-search" title="Shop Products" desc="Find smart options and deals" color="bg-emerald-500" onClick={() => onNavigate('shop')} />
-          <ActionCard icon="fas fa-receipt" title="Scan Receipt" desc="Instantly import your grocery history" color="bg-emerald-600" onClick={() => onNavigate('inventory')} />
-          <ActionCard icon="fas fa-utensils" title="Meal Planner" desc="Optimized menu generated by AI" color="bg-green-500" onClick={() => onNavigate('chat')} />
-          <ActionCard icon="fas fa-store" title="Favorite Stores" desc="Compare local pricing and deals" color="bg-green-600" onClick={() => onNavigate('stores')} />
-        </div>
-      </div>
-
-      {/* Secondary Information: Budget and Nutrition */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
-          <div className="flex justify-between items-start mb-4">
-            <div className="bg-emerald-50 w-12 h-12 rounded-2xl flex items-center justify-center text-emerald-600">
-              <i className="fas fa-wallet text-xl"></i>
-            </div>
-            <span className={`px-3 py-1 rounded-full text-xs font-bold ${spent > budget.weeklyAmount ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
-              {spent > budget.weeklyAmount ? 'Over Budget' : 'Good'}
-            </span>
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-slate-500 font-medium">Weekly Budget</h3>
-            <p className="text-4xl font-bold text-slate-900">${spent.toFixed(2)} <span className="text-xl font-normal text-slate-400">/ ${budget.weeklyAmount}</span></p>
-          </div>
-          <div className="mt-6 w-full bg-slate-100 rounded-full h-3">
-            <div 
-              className={`h-3 rounded-full transition-all duration-1000 ${spent > budget.weeklyAmount ? 'bg-red-500' : 'bg-emerald-500'}`}
-              style={{ width: `${Math.min(100, (spent / budget.weeklyAmount) * 100)}%` }}
-            ></div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 lg:col-span-2">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-lg text-slate-800">Shopping Cart Nutrition</h3>
-            <button className="text-emerald-600 text-sm font-semibold hover:underline" onClick={() => onNavigate('settings')}>Edit Goals</button>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <NutritionStat label="Calories" current={cartNutrition.calories} goal={goals.dailyCalories} unit="kcal" />
-            <NutritionStat label="Protein" current={cartNutrition.protein} goal={goals.dailyProtein} unit="g" />
-            <NutritionStat label="Carbs" current={cartNutrition.carbs} goal={goals.dailyCarbs} unit="g" />
-            <NutritionStat label="Fat" current={cartNutrition.fat} goal={goals.dailyFat} unit="g" />
-          </div>
+        {/* Quick Actions Grid (Span 8) */}
+        <div className="col-span-12 lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ActionTile 
+            title="Shop Products" 
+            desc="Find smart options and deals" 
+            icon="fa-search" 
+            color="bg-[#10b981]" 
+            onClick={() => onNavigate('shop')} 
+          />
+          <ActionTile 
+            title="Scan Receipt" 
+            desc="Instantly import your grocery history" 
+            icon="fa-receipt" 
+            color="bg-[#047857]" 
+            onClick={() => onNavigate('inventory')} 
+          />
+          <ActionTile 
+            title="Meal Planner" 
+            desc="Optimized menu generated by AI" 
+            icon="fa-utensils" 
+            color="bg-[#10b981]" 
+            onClick={() => onNavigate('chat')} 
+          />
+          <ActionTile 
+            title="Favorite Stores" 
+            desc="Compare local pricing and deals" 
+            icon="fa-store" 
+            color="bg-[#10b981]" 
+            onClick={() => onNavigate('stores')} 
+          />
         </div>
       </div>
 
-      {/* Feedback Section */}
-      <section className="pt-4">
-        <div className="bg-slate-900 rounded-[32px] p-8 text-white relative overflow-hidden group">
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-2 text-center md:text-left">
-              <h2 className="text-2xl font-black">Help us grow WasteLess</h2>
-              <p className="text-slate-400 max-w-md text-sm leading-relaxed">
-                Your feedback helps us build a more efficient kitchen for everyone. Share your thoughts on how we can improve.
-              </p>
+      {/* Main Grid: Row 2 */}
+      <div className="grid grid-cols-12 gap-8">
+        {/* Weekly Budget (Span 4) */}
+        <div className="col-span-12 lg:col-span-4 bg-white rounded-[32px] p-8 shadow-sm border border-slate-50 flex flex-col justify-between">
+          <div className="space-y-6">
+            <div className="flex justify-between items-start">
+              <div className="w-12 h-12 bg-[#ecfdf5] rounded-2xl flex items-center justify-center text-[#10b981]">
+                <i className="fas fa-wallet text-lg"></i>
+              </div>
+              <span className="px-3 py-1 bg-[#ecfdf5] text-[#10b981] text-[10px] font-black rounded-lg uppercase tracking-tight">Good</span>
             </div>
-            <a 
-              href="https://forms.gle/your-survey-id" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-2xl shadow-xl shadow-emerald-900/40 transition-all flex items-center gap-3 active:scale-95 shrink-0"
+            <div>
+              <h3 className="text-sm font-bold text-slate-400">Weekly Budget</h3>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="text-4xl font-black text-slate-900">${spent.toFixed(2)}</span>
+                <span className="text-sm text-slate-400 font-bold">/ ${budget.weeklyAmount}</span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8">
+            <div className="h-2 w-full bg-[#f1f5f9] rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-[#10b981] transition-all duration-1000" 
+                style={{ width: `${budgetProgress}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Nutrition Goals (Span 8) */}
+        <div className="col-span-12 lg:col-span-8 bg-white rounded-[32px] p-8 shadow-sm border border-slate-50">
+          <div className="flex justify-between items-center mb-10">
+            <h3 className="text-lg font-bold text-slate-800">Shopping Cart Nutrition</h3>
+            <button 
+              onClick={() => onNavigate('settings')} 
+              className="text-[#10b981] text-[11px] font-extrabold uppercase hover:underline"
             >
-              <i className="fas fa-comments"></i>
-              Give Feedback
-            </a>
+              Edit Goals
+            </button>
           </div>
-          <i className="fas fa-leaf absolute -right-4 -bottom-4 text-9xl text-white/5 rotate-12 group-hover:rotate-6 transition-transform duration-700"></i>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+            <NutritionProgress label="CALORIES" current={cartNutrition.calories} goal={goals.dailyCalories} unit="kcal" />
+            <NutritionProgress label="PROTEIN" current={cartNutrition.protein} goal={goals.dailyProtein} unit="g" />
+            <NutritionProgress label="CARBS" current={cartNutrition.carbs} goal={goals.dailyCarbs} unit="g" />
+            <NutritionProgress label="FAT" current={cartNutrition.fat} goal={goals.dailyFat} unit="g" />
+          </div>
         </div>
-      </section>
+      </div>
+
+      {/* Footer Banner */}
+      <div className="bg-[#0a0f1d] rounded-[32px] p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative">
+        <div className="space-y-2 relative z-10">
+          <h2 className="text-2xl font-black tracking-tight">Help us grow WasteLess</h2>
+          <p className="text-slate-400 text-sm font-medium max-w-xl">
+            Your feedback helps us build a more efficient software for everyone. Share your thoughts on how we can improve.
+          </p>
+        </div>
+        <button className="bg-[#10b981] hover:bg-[#059669] text-white font-extrabold px-8 py-4 rounded-2xl flex items-center gap-3 transition-all relative z-10 shadow-lg shadow-[#10b981]/10">
+          <i className="fas fa-comment text-lg"></i>
+          Give Feedback
+        </button>
+        {/* Background Decorative Element */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+      </div>
     </div>
   );
 };
 
-const NutritionStat: React.FC<{ label: string; current: number; goal: number; unit: string }> = ({ label, current, goal, unit }) => {
-  const progress = Math.min(100, (current / goal) * 100);
-  const color = progress > 100 ? 'bg-red-500' : progress > 80 ? 'bg-green-500' : 'bg-emerald-500';
+const NutritionProgress: React.FC<{ label: string; current: number; goal: number; unit: string }> = ({ label, current, goal, unit }) => {
+  const percent = Math.min(100, (current / goal) * 100);
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
-        <span>{label}</span>
-        <span>{progress.toFixed(0)}%</span>
+    <div className="space-y-4">
+      <div className="flex justify-between items-end">
+        <span className="text-[10px] font-black text-slate-400 tracking-tight">{label}</span>
+        <span className="text-[10px] font-black text-slate-400">{percent.toFixed(0)}%</span>
       </div>
-      <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${color} transition-all duration-700`} style={{ width: `${progress}%` }}></div>
+      <div className="h-1.5 w-full bg-[#f1f5f9] rounded-full overflow-hidden">
+        <div className="h-full bg-[#10b981] transition-all duration-1000" style={{ width: `${percent}%` }} />
       </div>
-      <div className="text-sm font-bold text-slate-800">{current.toFixed(0)} <span className="text-[10px] text-slate-400 font-normal">{unit} / {goal}{unit}</span></div>
+      <p className="text-sm font-black text-slate-900 leading-none">
+        {current.toFixed(0)} <span className="text-slate-400 text-[11px] font-bold ml-0.5 tracking-tight uppercase">{unit} / {goal}{unit}</span>
+      </p>
     </div>
   );
 };
 
-const ActionCard: React.FC<{ icon: string; title: string; desc: string; color: string; onClick: () => void }> = ({ icon, title, desc, color, onClick }) => (
-  <button onClick={onClick} className="group bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex items-start gap-4 hover:shadow-md hover:-translate-y-1 transition-all text-left">
-    <div className={`w-12 h-12 ${color} rounded-2xl flex items-center justify-center text-white text-xl shadow-lg`}><i className={icon}></i></div>
+const ActionTile: React.FC<{ title: string; desc: string; icon: string; color: string; onClick: () => void }> = ({ title, desc, icon, color, onClick }) => (
+  <button 
+    onClick={onClick}
+    className="bg-white p-6 rounded-[32px] border border-slate-50 shadow-sm hover:shadow-md transition-all flex items-center gap-6 text-left group"
+  >
+    <div className={`w-16 h-16 ${color} rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg shadow-emerald-50 shrink-0 group-hover:scale-105 transition-transform`}>
+      <i className={`fas ${icon}`}></i>
+    </div>
     <div>
-      <h4 className="font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">{title}</h4>
-      <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
+      <h4 className="font-extrabold text-[#111827] text-lg leading-tight">{title}</h4>
+      <p className="text-xs text-slate-400 font-medium mt-1 leading-relaxed line-clamp-2">{desc}</p>
     </div>
   </button>
 );

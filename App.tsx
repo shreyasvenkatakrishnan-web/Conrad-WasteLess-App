@@ -52,7 +52,7 @@ const App: React.FC = () => {
     ];
   });
 
-  // Track which alerts have been manually cleared from the UI
+  // Track which alerts have been manually "seen" (cleared from the badge)
   const [dismissedAlertIds, setDismissedAlertIds] = useState<string[]>(() => {
     const saved = localStorage.getItem('dismissedAlertIds');
     return saved ? JSON.parse(saved) : [];
@@ -102,14 +102,12 @@ const App: React.FC = () => {
     fat: acc.fat + (item.fat * item.quantity),
   }), { calories: 0, protein: 0, carbs: 0, fat: 0 }), [cart]);
 
+  // alertItems now includes all items, regardless of dismissedAlertIds
   const alertItems = useMemo(() => {
     const today = new Date();
     today.setHours(0,0,0,0);
     
     return inventory.reduce((acc, item) => {
-      // Don't show in notification center if dismissed
-      if (dismissedAlertIds.includes(item.id)) return acc;
-
       if (!item.expiryDate) return acc;
       const expiry = new Date(item.expiryDate);
       expiry.setHours(0,0,0,0);
@@ -120,18 +118,23 @@ const App: React.FC = () => {
       
       return acc;
     }, { expired: [] as InventoryItem[], expiringSoon: [] as InventoryItem[] });
-  }, [inventory, dismissedAlertIds]);
+  }, [inventory]);
 
-  const totalAlertsCount = alertItems.expired.length + alertItems.expiringSoon.length;
+  // unseenAlertsCount specifically calculates items the user hasn't seen yet
+  const unseenAlertsCount = useMemo(() => {
+    const expiredUnseen = alertItems.expired.filter(i => !dismissedAlertIds.includes(i.id)).length;
+    const soonUnseen = alertItems.expiringSoon.filter(i => !dismissedAlertIds.includes(i.id)).length;
+    return expiredUnseen + soonUnseen;
+  }, [alertItems, dismissedAlertIds]);
 
-  // Set unseen alerts flag whenever new alerts appear that aren't dismissed
+  // Set unseen alerts flag for animation whenever new alerts appear that aren't dismissed
   useEffect(() => {
-    if (totalAlertsCount > 0) {
+    if (unseenAlertsCount > 0) {
       setHasUnseenAlerts(true);
     } else {
       setHasUnseenAlerts(false);
     }
-  }, [totalAlertsCount]);
+  }, [unseenAlertsCount]);
 
   // --- Actions ---
   const dismissAlerts = useCallback(() => {
@@ -514,10 +517,10 @@ const App: React.FC = () => {
             onClick={openNotifications}
             className="w-12 h-12 bg-white rounded-2xl shadow-lg border border-slate-100 flex items-center justify-center text-slate-500 hover:text-emerald-600 transition-all relative group"
           >
-            <i className={`fas fa-bell text-lg ${hasUnseenAlerts && totalAlertsCount > 0 ? 'animate-swing' : ''}`}></i>
-            {totalAlertsCount > 0 && (
+            <i className={`fas fa-bell text-lg ${hasUnseenAlerts && unseenAlertsCount > 0 ? 'animate-swing' : ''}`}></i>
+            {unseenAlertsCount > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white animate-pulse">
-                {totalAlertsCount}
+                {unseenAlertsCount}
               </span>
             )}
             <span className="absolute right-full mr-3 px-3 py-1.5 bg-slate-800 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none uppercase tracking-widest">

@@ -20,11 +20,26 @@ const Cart: React.FC<CartProps> = ({ items, onUpdateQty, onRemove, onCheckout, o
   const [duplicates, setDuplicates] = useState<{ cartItem: CartItem; invItem: InventoryItem }[]>([]);
 
   const handleCheckoutClick = () => {
-    // Efficiency Check: Look for cart items already in inventory
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Efficiency Check: Look for cart items already in inventory that ARE NOT expired
     const foundDuplicates = items.reduce((acc, cartItem) => {
       const invMatch = inventory.find(i => i.name.toLowerCase() === cartItem.name.toLowerCase());
+      
       if (invMatch) {
-        acc.push({ cartItem, invItem: invMatch });
+        // If the item in inventory has an expiry date, check if it's already expired
+        let isExpired = false;
+        if (invMatch.expiryDate) {
+          const expiry = new Date(invMatch.expiryDate);
+          expiry.setHours(0, 0, 0, 0);
+          isExpired = expiry < today;
+        }
+
+        // Only warn if the item we already have is still good/usable
+        if (!isExpired) {
+          acc.push({ cartItem, invItem: invMatch });
+        }
       }
       return acc;
     }, [] as { cartItem: CartItem; invItem: InventoryItem }[]);

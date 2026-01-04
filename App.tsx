@@ -495,10 +495,10 @@ const App: React.FC = () => {
         <div className="flex md:flex-col justify-around md:justify-start flex-1 w-full gap-1">
           <NavItem icon="fas fa-th-large" label="Dashboard" active={view === 'dashboard'} onClick={() => setView('dashboard')} />
           <NavItem icon="fas fa-search" label="Shop" active={view === 'shop'} onClick={() => setView('shop')} />
-          <NavItem icon="fas fa-utensils" label="Recipes" active={view === 'recipes'} onClick={() => setView('recipes')} />
-          <NavItem icon="fas fa-tag" label="Deals" active={view === 'deals'} onClick={() => setView('deals')} />
           <NavItem icon="fas fa-shopping-basket" label="Cart" active={view === 'cart'} badge={cart.length} onClick={() => setView('cart')} />
           <NavItem icon="fas fa-clipboard-list" label="Inventory" active={view === 'inventory' || view === 'calendar'} onClick={() => setView('inventory')} />
+          <NavItem icon="fas fa-utensils" label="Recipes" active={view === 'recipes'} onClick={() => setView('recipes')} />
+          <NavItem icon="fas fa-tag" label="Deals" active={view === 'deals'} onClick={() => setView('deals')} />
           <NavItem icon="fas fa-robot" label="AI Assistant" active={view === 'chat'} onClick={() => setView('chat')} />
         </div>
         

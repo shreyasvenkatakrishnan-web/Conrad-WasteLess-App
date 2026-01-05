@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Product, 
@@ -47,7 +46,7 @@ const App: React.FC = () => {
     const saved = localStorage.getItem('inventory');
     return saved ? JSON.parse(saved) : [
       { id: 'i1', name: 'Eggs', quantity: 6, unit: 'pieces', category: 'dairy-eggs', expiryDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0], addedDate: new Date().toISOString(), imageUrl: 'https://images.unsplash.com/photo-1582722872445-41ca507ad311?q=80&w=200&auto=format&fit=crop' },
-      { id: 'i2', name: 'Milk', quantity: 1, unit: 'containers', category: 'dairy-eggs', expiryDate: new Date(Date.now() - 86400000).toISOString().split('T')[0], addedDate: new Date().toISOString(), imageUrl: 'https://images.unsplash.com/photo-1550583724-b26cc28df5d1?q=80&w=200&auto=format&fit=crop' },
+      { id: 'i2', name: 'Milk', quantity: 1, unit: 'containers', category: 'dairy-eggs', expiryDate: new Date(Date.now() - 86400000).toISOString().split('T')[0], addedDate: new Date().toISOString(), imageUrl: 'milk.jpg' },
       { id: 'i3', name: 'Rice', quantity: 1, unit: 'bags', category: 'pantry', expiryDate: undefined, addedDate: new Date().toISOString(), imageUrl: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=200&auto=format&fit=crop' }
     ];
   });
@@ -229,7 +228,12 @@ const App: React.FC = () => {
       let shelfLifeDays = 14;
 
       switch(item.category) {
-        case 'produce': invCat = 'vegetables'; shelfLifeDays = 5; break;
+        case 'produce': 
+          const lowerName = item.name.toLowerCase();
+          const isFruit = lowerName.includes('banana') || lowerName.includes('apple') || lowerName.includes('berry') || lowerName.includes('grape') || lowerName.includes('orange') || lowerName.includes('fruit');
+          invCat = isFruit ? 'fruits' : 'vegetables'; 
+          shelfLifeDays = 5; 
+          break;
         case 'dairy': invCat = 'dairy-eggs'; shelfLifeDays = 10; break;
         case 'meat': case 'poultry': invCat = 'meat-poultry'; shelfLifeDays = 3; break;
         case 'seafood': invCat = 'seafood'; shelfLifeDays = 2; break;

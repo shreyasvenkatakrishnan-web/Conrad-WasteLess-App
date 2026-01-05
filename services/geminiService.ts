@@ -255,10 +255,10 @@ export const parseShoppingItems = (text: string): Partial<CartItem>[] => {
       imageUrl = 'https://images.unsplash.com/photo-1603833665858-e61d17a86224?q=80&w=200&auto=format&fit=crop';
     } else if (lowerName.includes('milk') || lowerName.includes('yogurt')) {
       calories = 150; protein = 8; carbs = 12; fat = 8;
-      imageUrl = 'https://images.unsplash.com/photo-1550583724-b26cc28df5d1?q=80&w=200&auto=format&fit=crop';
+      imageUrl = 'https://images.unsplash.com/photo-1634141510639-d691d86f47be?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8bWlsa3xlbnwwfHwwfHx8MA%3D%3D';
     } else if (lowerName.includes('egg')) {
       calories = 155; protein = 13; carbs = 1; fat = 11;
-      imageUrl = 'https://images.unsplash.com/photo-1582722872445-41ca507ad311?q=80&w=200&auto=format&fit=crop';
+      imageUrl = 'https://plus.unsplash.com/premium_photo-1676686125407-227f3d352df8?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8ZWdnc3xlbnwwfHwwfHx8MA%3D%3D';
     }
 
     items.push({

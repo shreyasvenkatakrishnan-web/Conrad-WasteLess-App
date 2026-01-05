@@ -44,8 +44,7 @@ export const MOCK_PRODUCTS: Product[] = [
     servingSize: '1 cup',
     isOrganic: false,
     isOnSale: false,
-    imageUrl: 'https://images.unsplash.com/photo-1550583724-b26cc28df5d1?q=80&w=400&auto=format&fit=crop'
-  },
+    imageUrl: 'https://images.unsplash.com/photo-1634141510639-d691d86f47be?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8bWlsa3xlbnwwfHwwfHx8MA%3D%3D'
   {
     id: 'p019',
     name: 'Eggs',
@@ -59,7 +58,7 @@ export const MOCK_PRODUCTS: Product[] = [
     servingSize: '1 egg',
     isOrganic: true,
     isOnSale: false,
-    imageUrl: 'https://images.unsplash.com/photo-1582722872445-41ca507ad311?q=80&w=400&auto=format&fit=crop'
+    imageUrl: 'https://plus.unsplash.com/premium_photo-1676686125407-227f3d352df8?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8ZWdnc3xlbnwwfHwwfHx8MA%3D%3D'
   },
   {
     id: 'p020',
